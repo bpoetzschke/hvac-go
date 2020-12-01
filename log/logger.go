@@ -11,7 +11,6 @@ func init() {
 	standardLogger.SetFormatter(&logrus.TextFormatter{
 		FullTimestamp:    true,
 		DisableTimestamp: false,
-		TimestampFormat:  "2020-12-01T14:44:44Z",
 	})
 }
 
