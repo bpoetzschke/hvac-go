@@ -45,6 +45,7 @@ func (wrapper piGpioWrapper) GpioCfgGetInternals() uint32 {
 func (wrapper piGpioWrapper) GpioCfgSetInternals(cfg uint32) int {
 	res := C.gpioCfgSetInternals(C.uint32_t(cfg))
 	goRes := int(res)
+	fmt.Printf("FOO: %d\n", goRes)
 	log.Debugf("GpioCfgSetInternals: %d", goRes)
 
 	return goRes
