@@ -11,7 +11,7 @@ func init() {
 }
 
 func Debug(msg string) {
-	Debugf(msg)
+	standardLogger.Debug(msg)
 }
 
 func Debugf(format string, args ...interface{}) {
