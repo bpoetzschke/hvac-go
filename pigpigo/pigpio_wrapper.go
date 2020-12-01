@@ -17,9 +17,9 @@ var (
 
 type PiGpioWrapper interface {
 	GpioCfgGetInternals() uint32
-	GpioCfgSetInternals(cfg uint32) (int, error)
-	GpioInitialise() (int, error)
-	GpioSetMode(gpio uint, mode uint) (int, error)
+	GpioCfgSetInternals(cfg uint32) int
+	GpioInitialise() int
+	GpioSetMode(gpio uint, mode uint) int
 	GpioTerminate()
 }
 
@@ -36,34 +36,22 @@ func (wrapper piGpioWrapper) GpioCfgGetInternals() uint32 {
 	return uint32(res)
 }
 
-func (wrapper piGpioWrapper) GpioCfgSetInternals(cfg uint32) (int, error) {
+func (wrapper piGpioWrapper) GpioCfgSetInternals(cfg uint32) int {
 	res := C.gpioCfgSetInternals(C.uint32_t(cfg))
-	goRes, ok := res.(int)
-	if ok {
-		return goRes, nil
-	}
 
-	return -1, ErrorFailedTypeConversion
+	return int(res)
 }
 
-func (wrapper piGpioWrapper) GpioInitialise() (int, error) {
+func (wrapper piGpioWrapper) GpioInitialise() int {
 	res := C.gpioInitialise()
-	goRes, ok := res.(int)
-	if ok {
-		return goRes, nil
-	}
 
-	return -1, ErrorFailedTypeConversion
+	return int(res)
 }
 
-func (wrapper piGpioWrapper) GpioSetMode(gpio uint, mode uint) (int, error) {
+func (wrapper piGpioWrapper) GpioSetMode(gpio uint, mode uint) int {
 	res := C.gpioSetMode(C.unsigned(gpio), C.unsigned(mode))
-	goRes, ok := res.(int)
-	if ok {
-		return goRes, nil
-	}
 
-	return -1, ErrorFailedTypeConversion
+	return int(res)
 }
 
 func (wrapper piGpioWrapper) GpioTerminate() {

@@ -19,10 +19,7 @@ type piGpiGo struct {
 }
 
 func (gpiGo *piGpiGo) Setup() error {
-	err := gpiGo.disableSigHandler()
-	if err != nil {
-		return err
-	}
+	gpiGo.disableSigHandler()
 	return gpiGo.initGpio()
 }
 
@@ -30,39 +27,21 @@ func (gpiGo *piGpiGo) Shutdown() {
 	gpiGo.terminate()
 }
 
-func (gpiGo *piGpiGo) disableSigHandler() error {
+func (gpiGo *piGpiGo) disableSigHandler() {
 	log.Debug("Disabling pigpio signal handler")
-	cfg, err := gpiGo.wrapper.GpioCfgGetInternals()
-	if err != nil {
-		log.Errorf("Failed to get gpio config internals. %s", err)
-		return err
-	}
+	cfg := gpiGo.wrapper.GpioCfgGetInternals()
 	cfg |= piCfgNoSigHandler
-	_, err = gpiGo.wrapper.GpioCfgSetInternals(cfg)
-	if err != nil {
-		log.Errorf("Failed to set gpio config internals. %s", err)
-		return err
-	}
-
-	return nil
+	gpiGo.wrapper.GpioCfgSetInternals(cfg)
 }
 
 func (gpiGo *piGpiGo) initGpio() error {
-	res, err := gpiGo.wrapper.GpioInitialise()
-	if err != nil {
-		log.Errorf("Failed to initialise gpio. %s", err)
-		return err
-	}
+	res := gpiGo.wrapper.GpioInitialise()
 	if res < 0 {
 		log.Errorf("Failed to initialise gpio, return value: %d", res)
 		return ErrorInitFailed
 	}
 
-	res, err = gpiGo.wrapper.GpioSetMode(23, 1)
-	if err != nil {
-		log.Errorf("Failed to set gpio mode. %s", err)
-		return err
-	}
+	res = gpiGo.wrapper.GpioSetMode(23, 1)
 	if res != 0 {
 		log.Errorf("Failed to set gpio mode, return value: %d", res)
 		return ErrorSetGpioFailed
