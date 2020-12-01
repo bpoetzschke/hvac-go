@@ -7,7 +7,7 @@ import (
 func NewPiGpiGo(gpioPin uint) PiGpiGo {
 	gpiGo := piGpiGo{
 		gpioPin: gpioPin,
-		wrapper: piGpioWrapper{},
+		wrapper: NewPiGpioWrapper(),
 	}
 
 	return &gpiGo
