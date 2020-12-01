@@ -5,16 +5,21 @@ package pigpigo
 #cgo LDFLAGS: -lpigpio
 */
 import "C"
+import "fmt"
 
 const (
 	piCfgNoSigHandler = 1 << 10
 )
 
+var (
+	ErrorFailedTypeConversion = fmt.Errorf("failed to convert c type to go type")
+)
+
 type PiGpioWrapper interface {
-	GpioCfgGetInternals() uint32
-	GpioCfgSetInternals(uint322 uint32) int
-	GpioInitialise() int
-	GpioSetMode(gpio uint, mode uint) int
+	GpioCfgGetInternals() (uint32, error)
+	GpioCfgSetInternals(cfg uint32) (int, error)
+	GpioInitialise() (int, error)
+	GpioSetMode(gpio uint, mode uint) (int, error)
 	GpioTerminate()
 }
 
@@ -25,20 +30,44 @@ func NewPiGpioWrapper() PiGpioWrapper {
 type piGpioWrapper struct {
 }
 
-func (wrapper piGpioWrapper) GpioCfgGetInternals() uint32 {
-	return C.gpioCfgGetInternals()
+func (wrapper piGpioWrapper) GpioCfgGetInternals() (uint32, error) {
+	res := C.gpioCfgGetInternals()
+	goRes, ok := res.(uint32)
+	if ok {
+		return goRes, nil
+	}
+
+	return -1, ErrorFailedTypeConversion
 }
 
-func (wrapper piGpioWrapper) GpioCfgSetInternals(cfg uint32) int {
-	return C.gpioCfgSetInternals(cfg)
+func (wrapper piGpioWrapper) GpioCfgSetInternals(cfg uint32) (int, error) {
+	res := C.gpioCfgSetInternals(C.uint32_t(cfg))
+	goRes, ok := res.(int)
+	if ok {
+		return goRes, nil
+	}
+
+	return -1, ErrorFailedTypeConversion
 }
 
-func (wrapper piGpioWrapper) GpioInitialise() int {
-	return C.gpioInitialise()
+func (wrapper piGpioWrapper) GpioInitialise() (int, error) {
+	res := C.gpioInitialise()
+	goRes, ok := res.(int)
+	if ok {
+		return goRes, nil
+	}
+
+	return -1, ErrorFailedTypeConversion
 }
 
-func (wrapper piGpioWrapper) GpioSetMode(gpio uint, mode uint) int {
-	return C.gpioSetMode(gpio, mode)
+func (wrapper piGpioWrapper) GpioSetMode(gpio uint, mode uint) (int, error) {
+	res := C.gpioSetMode(C.unsigned(gpio), C.unsigned(mode))
+	goRes, ok := res.(int)
+	if ok {
+		return goRes, nil
+	}
+
+	return -1, ErrorFailedTypeConversion
 }
 
 func (wrapper piGpioWrapper) GpioTerminate() {
