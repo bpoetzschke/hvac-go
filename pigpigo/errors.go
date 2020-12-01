@@ -1,4 +1,4 @@
-package irsender
+package pigpigo
 
 import "fmt"
 

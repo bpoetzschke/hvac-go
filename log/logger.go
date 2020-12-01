@@ -6,6 +6,10 @@ import (
 
 var standardLogger = logrus.StandardLogger()
 
+func Debug(msg string) {
+	Debugf(msg)
+}
+
 func Debugf(format string, args ...interface{}) {
 	standardLogger.Debugf(format, args)
 }
