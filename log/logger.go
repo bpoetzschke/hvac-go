@@ -8,6 +8,10 @@ var standardLogger = logrus.StandardLogger()
 
 func init() {
 	standardLogger.SetLevel(logrus.DebugLevel)
+	standardLogger.SetFormatter(&logrus.JSONFormatter{
+		DisableTimestamp: false,
+		PrettyPrint:      true,
+	})
 }
 
 func Debug(msg string) {
