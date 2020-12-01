@@ -1,4 +1,4 @@
-package hvac_go
+package main
 
 import (
 	"time"
