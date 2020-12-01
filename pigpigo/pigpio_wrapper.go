@@ -16,7 +16,7 @@ var (
 )
 
 type PiGpioWrapper interface {
-	GpioCfgGetInternals() (uint32, error)
+	GpioCfgGetInternals() uint32
 	GpioCfgSetInternals(cfg uint32) (int, error)
 	GpioInitialise() (int, error)
 	GpioSetMode(gpio uint, mode uint) (int, error)
@@ -30,14 +30,10 @@ func NewPiGpioWrapper() PiGpioWrapper {
 type piGpioWrapper struct {
 }
 
-func (wrapper piGpioWrapper) GpioCfgGetInternals() (uint32, error) {
+func (wrapper piGpioWrapper) GpioCfgGetInternals() uint32 {
 	res := C.gpioCfgGetInternals()
-	goRes, ok := res.(uint32)
-	if ok {
-		return goRes, nil
-	}
 
-	return -1, ErrorFailedTypeConversion
+	return uint32(res)
 }
 
 func (wrapper piGpioWrapper) GpioCfgSetInternals(cfg uint32) (int, error) {
