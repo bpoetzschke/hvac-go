@@ -7,7 +7,6 @@ import (
 func NewPiGpiGo(gpioPin uint) PiGpiGo {
 	gpiGo := piGpiGo{
 		gpioPin: gpioPin,
-		wrapper: NewPiGpioWrapper(),
 	}
 
 	return &gpiGo
@@ -15,7 +14,6 @@ func NewPiGpiGo(gpioPin uint) PiGpiGo {
 
 type piGpiGo struct {
 	gpioPin uint
-	wrapper PiGpioWrapper
 }
 
 func (gpiGo *piGpiGo) Setup() error {
@@ -29,19 +27,19 @@ func (gpiGo *piGpiGo) Shutdown() {
 
 func (gpiGo *piGpiGo) disableSigHandler() {
 	log.Debug("Disabling pigpio signal handler")
-	cfg := gpiGo.wrapper.GpioCfgGetInternals()
+	cfg := GpioCfgGetInternals()
 	cfg |= piCfgNoSigHandler
-	gpiGo.wrapper.GpioCfgSetInternals(cfg)
+	GpioCfgSetInternals(cfg)
 }
 
 func (gpiGo *piGpiGo) initGpio() error {
-	res := gpiGo.wrapper.GpioInitialise()
+	res := GpioInitialise()
 	if res < 0 {
 		log.Errorf("Failed to initialise gpio, return value: %d", res)
 		return ErrorInitFailed
 	}
 
-	res = gpiGo.wrapper.GpioSetMode(23, 1)
+	res = GpioSetMode(23, 1)
 	if res != 0 {
 		log.Errorf("Failed to set gpio mode, return value: %d", res)
 		return ErrorSetGpioFailed
@@ -52,5 +50,5 @@ func (gpiGo *piGpiGo) initGpio() error {
 
 func (gpiGo *piGpiGo) terminate() {
 	log.Debug("Shutdown pigpio")
-	gpiGo.wrapper.GpioTerminate()
+	GpioTerminate()
 }

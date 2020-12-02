@@ -19,9 +19,13 @@ func Debug(msg string) {
 }
 
 func Debugf(format string, args ...interface{}) {
-	standardLogger.Debugf(format, args)
+	standardLogger.Debugf(format, args...)
+}
+
+func Warnf(format string, args ...interface{}) {
+	standardLogger.Warnf(format, args...)
 }
 
 func Errorf(format string, args ...interface{}) {
-	standardLogger.Errorf(format, args)
+	standardLogger.Errorf(format, args...)
 }
