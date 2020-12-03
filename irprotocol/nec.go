@@ -35,7 +35,7 @@ func NewNECIRProtocol() IRProtocol {
 
 type necIRProtocol struct {
 	frequency             uint32
-	dutyCycle             float32
+	dutyCycle             float64
 	leadingPulseDuration  uint32
 	leadingGapDuration    uint32
 	onePulseDuration      uint32
@@ -46,25 +46,21 @@ type necIRProtocol struct {
 	trailingGapDuration   uint32
 }
 
-func (nec necIRProtocol) ProcessCode(gpioPin uint32, irCodes []IRCode) {
-	wave := irwave.NewWave()
-	// TODO: THis check can be done in the AGC method itself
-	if nec.leadingPulseDuration > 0 || nec.leadingGapDuration > 0 {
-		nec.addAGCPulse(gpioPin, wave)
-	}
+func (nec necIRProtocol) ProcessCode(gpioPin uint32, irCodes []IRCode) error {
+	wave := irwave.NewWave(nec.frequency, nec.dutyCycle)
+	nec.addAGCPulse(gpioPin, wave)
 	for _, irCode := range irCodes {
 		if irCode == IRCodeZero {
 			nec.zero(gpioPin, wave)
 		} else if irCode == IRCodeOne {
 			nec.one(gpioPin, wave)
 		} else {
-			log.Warnf("Unknown ir code: %s", irCode)
+			log.Errorf("Unknown ir code: %s", irCode)
+			return ErrUnknownIRCode
 		}
 	}
-	// TODO: do check in trailing pulse method
-	if nec.trailingPulseDuration > 0 {
-		nec.addTrailingPulse(gpioPin, wave)
-	}
+	nec.addTrailingPulse(gpioPin, wave)
+	return nil
 }
 
 func (nec necIRProtocol) addAGCPulse(gpioPin uint32, wave irwave.IRWave) {
