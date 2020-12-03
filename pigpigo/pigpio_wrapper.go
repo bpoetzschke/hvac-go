@@ -11,10 +11,6 @@ import (
 	"github.com/bpoetzschke/hvac-go/log"
 )
 
-const (
-	piCfgNoSigHandler = 1 << 10
-)
-
 func GpioCfgGetInternals() uint32 {
 	res := C.gpioCfgGetInternals()
 	goRes := uint32(res)
