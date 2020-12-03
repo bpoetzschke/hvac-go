@@ -1,3 +1,5 @@
+// +build pigpio
+
 package pigpigo
 
 /*
@@ -46,6 +48,7 @@ func GpioSetMode(gpio uint, mode uint) int {
 }
 
 func GpioTerminate() {
+	log.Debug("GpioTerminate")
 	C.gpioTerminate()
 }
 

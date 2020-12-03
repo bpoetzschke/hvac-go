@@ -1,7 +1,5 @@
 package irprotocol
 
 type IRProtocol interface {
-	One()
-	Zero()
-	ProcessCode([]IRCode)
+	ProcessCode(gpioPin uint32, irCode []IRCode)
 }
