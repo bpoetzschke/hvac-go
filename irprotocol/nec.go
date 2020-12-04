@@ -18,37 +18,60 @@ const (
 	trailingGapDuration   = 0
 )
 
-func NewNECIRProtocol() IRProtocol {
+var defaultConfig = NECConfig{
+	LeadingPulse: NECPulseConfig{
+		PulseDuration: leadingPulseDuration,
+		GapDuration:   leadingGapDuration,
+	},
+	OnePulse: NECPulseConfig{
+		PulseDuration: onePulseDuration,
+		GapDuration:   oneGapDuration,
+	},
+	ZeroPulse: NECPulseConfig{
+		PulseDuration: zeroPulseDuration,
+		GapDuration:   zeroGapDuration,
+	},
+	TrailingPulse: NECPulseConfig{
+		PulseDuration: trailingPulseDuration,
+		GapDuration:   trailingGapDuration,
+	},
+}
+
+type NECPulseConfig struct {
+	PulseDuration uint32
+	GapDuration   uint32
+}
+
+type NECConfig struct {
+	LeadingPulse  NECPulseConfig
+	OnePulse      NECPulseConfig
+	ZeroPulse     NECPulseConfig
+	TrailingPulse NECPulseConfig
+}
+
+func NewNECIRProtocol(config *NECConfig) IRProtocol {
+	cfgToApply := defaultConfig
+	if config != nil {
+		cfgToApply = *config
+	}
 	return &necIRProtocol{
-		frequency:             frequency,
-		dutyCycle:             dutyCycle,
-		leadingPulseDuration:  leadingPulseDuration,
-		leadingGapDuration:    leadingGapDuration,
-		onePulseDuration:      onePulseDuration,
-		oneGapDuration:        oneGapDuration,
-		zeroPulseDuration:     zeroPulseDuration,
-		zeroGapDuration:       zeroGapDuration,
-		trailingPulseDuration: trailingPulseDuration,
-		trailingGapDuration:   trailingGapDuration,
+		frequency: frequency,
+		dutyCycle: dutyCycle,
+		config:    cfgToApply,
 	}
 }
 
 type necIRProtocol struct {
-	frequency             uint32
-	dutyCycle             float64
-	leadingPulseDuration  uint32
-	leadingGapDuration    uint32
-	onePulseDuration      uint32
-	oneGapDuration        uint32
-	zeroPulseDuration     uint32
-	zeroGapDuration       uint32
-	trailingPulseDuration uint32
-	trailingGapDuration   uint32
+	frequency uint32
+	dutyCycle float64
+	config    NECConfig
 }
 
 func (nec necIRProtocol) ProcessCode(gpioPin uint32, irCodes []IRCode) error {
 	wave := irwave.NewWave(nec.frequency, nec.dutyCycle)
-	nec.addAGCPulse(gpioPin, wave)
+	if nec.config.LeadingPulse.PulseDuration > 0 || nec.config.LeadingPulse.GapDuration > 0 {
+		nec.addAGCPulse(gpioPin, wave)
+	}
 	for _, irCode := range irCodes {
 		if irCode == IRCodeZero {
 			nec.zero(gpioPin, wave)
@@ -59,32 +82,34 @@ func (nec necIRProtocol) ProcessCode(gpioPin uint32, irCodes []IRCode) error {
 			return ErrUnknownIRCode
 		}
 	}
-	nec.addTrailingPulse(gpioPin, wave)
+	if nec.config.TrailingPulse.PulseDuration > 0 {
+		nec.addTrailingPulse(gpioPin, wave)
+	}
 	return nil
 }
 
 func (nec necIRProtocol) addAGCPulse(gpioPin uint32, wave irwave.IRWave) {
 	log.Debug("NEC: Add AGC burst pulse")
-	wave.One(gpioPin, nec.leadingPulseDuration)
-	wave.Zero(gpioPin, nec.leadingGapDuration)
+	wave.One(gpioPin, nec.config.LeadingPulse.PulseDuration)
+	wave.Zero(gpioPin, nec.config.LeadingPulse.GapDuration)
 }
 
 func (nec necIRProtocol) addTrailingPulse(gpioPin uint32, wave irwave.IRWave) {
 	log.Debug("NEC: Add trailing pulse")
-	wave.One(gpioPin, nec.trailingPulseDuration)
-	if nec.trailingGapDuration > 0 {
-		wave.Zero(gpioPin, nec.trailingGapDuration)
+	wave.One(gpioPin, nec.config.TrailingPulse.PulseDuration)
+	if nec.config.TrailingPulse.GapDuration > 0 {
+		wave.Zero(gpioPin, nec.config.TrailingPulse.GapDuration)
 	}
 }
 
 func (nec necIRProtocol) zero(gpioPin uint32, wave irwave.IRWave) {
 	log.Debugf("NEC: Zero")
-	wave.One(gpioPin, nec.zeroPulseDuration)
-	wave.Zero(gpioPin, nec.zeroGapDuration)
+	wave.One(gpioPin, nec.config.ZeroPulse.PulseDuration)
+	wave.Zero(gpioPin, nec.config.ZeroPulse.GapDuration)
 }
 
 func (nec necIRProtocol) one(gpioPin uint32, wave irwave.IRWave) {
 	log.Debugf("NEC: One")
-	wave.One(gpioPin, nec.onePulseDuration)
-	wave.Zero(gpioPin, nec.oneGapDuration)
+	wave.One(gpioPin, nec.config.OnePulse.PulseDuration)
+	wave.Zero(gpioPin, nec.config.OnePulse.GapDuration)
 }
