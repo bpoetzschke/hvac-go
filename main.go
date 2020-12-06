@@ -9,12 +9,12 @@ import (
 )
 
 func main() {
-	gpiGo := pigpigo.NewPiGpiGo(23)
+	gpiGo := pigpigo.NewPiGpiGo(17)
 	err := gpiGo.Setup()
 	if err != nil {
 		fmt.Printf("Failed to setup gpio. %s", err)
 		os.Exit(1)
 	}
 	defer gpiGo.Shutdown()
-	<-time.After(10 * time.Second)
+	<-time.After(2 * time.Second)
 }

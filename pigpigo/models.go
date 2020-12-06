@@ -5,3 +5,5 @@ type Pulse struct {
 	GpioOff uint32
 	UsDelay uint32
 }
+
+type GpioPin uint32
