@@ -1,7 +1,7 @@
 package irprotocol
 
 import (
-	"github.com/bpoetzschke/hvac-go/irwave"
+	"github.com/bpoetzschke/hvac-go/ir"
 	"github.com/bpoetzschke/hvac-go/log"
 )
 
@@ -49,7 +49,7 @@ type NECConfig struct {
 	TrailingPulse NECPulseConfig
 }
 
-func NewNECIRProtocol(config *NECConfig) IRProtocol {
+func NewNECIRProtocol(config *NECConfig) Protocol {
 	cfgToApply := defaultConfig
 	if config != nil {
 		cfgToApply = *config
@@ -67,8 +67,8 @@ type necIRProtocol struct {
 	config    NECConfig
 }
 
-func (nec necIRProtocol) ProcessCode(gpioPin uint32, irCodes []IRCode) error {
-	wave := irwave.NewWave(nec.frequency, nec.dutyCycle)
+func (nec necIRProtocol) ProcessCode(gpioPin uint32, irCodes []IRCode) (ir.Wave, error) {
+	wave := ir.NewWave(nec.frequency, nec.dutyCycle)
 	if nec.config.LeadingPulse.PulseDuration > 0 || nec.config.LeadingPulse.GapDuration > 0 {
 		nec.addAGCPulse(gpioPin, wave)
 	}
@@ -79,22 +79,22 @@ func (nec necIRProtocol) ProcessCode(gpioPin uint32, irCodes []IRCode) error {
 			nec.one(gpioPin, wave)
 		} else {
 			log.Errorf("Unknown ir code: %s", irCode)
-			return ErrUnknownIRCode
+			return nil, ErrUnknownIRCode
 		}
 	}
 	if nec.config.TrailingPulse.PulseDuration > 0 {
 		nec.addTrailingPulse(gpioPin, wave)
 	}
-	return nil
+	return wave, nil
 }
 
-func (nec necIRProtocol) addAGCPulse(gpioPin uint32, wave irwave.IRWave) {
+func (nec necIRProtocol) addAGCPulse(gpioPin uint32, wave ir.Wave) {
 	log.Debug("NEC: Add AGC burst pulse")
 	wave.One(gpioPin, nec.config.LeadingPulse.PulseDuration)
 	wave.Zero(gpioPin, nec.config.LeadingPulse.GapDuration)
 }
 
-func (nec necIRProtocol) addTrailingPulse(gpioPin uint32, wave irwave.IRWave) {
+func (nec necIRProtocol) addTrailingPulse(gpioPin uint32, wave ir.Wave) {
 	log.Debug("NEC: Add trailing pulse")
 	wave.One(gpioPin, nec.config.TrailingPulse.PulseDuration)
 	if nec.config.TrailingPulse.GapDuration > 0 {
@@ -102,13 +102,13 @@ func (nec necIRProtocol) addTrailingPulse(gpioPin uint32, wave irwave.IRWave) {
 	}
 }
 
-func (nec necIRProtocol) zero(gpioPin uint32, wave irwave.IRWave) {
+func (nec necIRProtocol) zero(gpioPin uint32, wave ir.Wave) {
 	log.Debugf("NEC: Zero")
 	wave.One(gpioPin, nec.config.ZeroPulse.PulseDuration)
 	wave.Zero(gpioPin, nec.config.ZeroPulse.GapDuration)
 }
 
-func (nec necIRProtocol) one(gpioPin uint32, wave irwave.IRWave) {
+func (nec necIRProtocol) one(gpioPin uint32, wave ir.Wave) {
 	log.Debugf("NEC: One")
 	wave.One(gpioPin, nec.config.OnePulse.PulseDuration)
 	wave.Zero(gpioPin, nec.config.OnePulse.GapDuration)

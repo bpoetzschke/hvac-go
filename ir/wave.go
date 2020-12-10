@@ -1,4 +1,4 @@
-package irwave
+package ir
 
 import (
 	"math"
@@ -7,30 +7,30 @@ import (
 	"github.com/bpoetzschke/hvac-go/pigpigo"
 )
 
-func NewWave(frequency uint32, dutyCycle float64) IRWave {
-	return &wave{
+func NewWave(frequency uint32, dutyCycle float64) Wave {
+	return &irWave{
 		frequency: frequency,
 		dutyCycle: dutyCycle,
 	}
 }
 
-type wave struct {
+type irWave struct {
 	frequency uint32
 	dutyCycle float64
 
 	pulses []pigpigo.Pulse
 }
 
-func (w *wave) GetPulses() []pigpigo.Pulse {
+func (w *irWave) GetPulses() []pigpigo.Pulse {
 	return w.pulses
 }
 
-func (w *wave) Zero(gpioPin uint32, duration uint32) {
+func (w *irWave) Zero(gpioPin uint32, duration uint32) {
 	log.Debugf("SPACE\t%s", duration)
 	w.addPulse(0, 1<<gpioPin, duration)
 }
 
-func (w *wave) One(gpioPin uint32, duration uint32) {
+func (w *irWave) One(gpioPin uint32, duration uint32) {
 	log.Debugf("MARK\t%s", duration)
 	periodTime := 1_000_000.0 / float64(w.frequency)
 	onDuration := int(math.Round(periodTime * w.dutyCycle))
@@ -47,7 +47,7 @@ func (w *wave) One(gpioPin uint32, duration uint32) {
 	}
 }
 
-func (w *wave) addPulse(gpioOn uint32, gpioOff uint32, usDelay uint32) {
+func (w *irWave) addPulse(gpioOn uint32, gpioOff uint32, usDelay uint32) {
 	w.pulses = append(w.pulses, pigpigo.Pulse{
 		GpioOn:  gpioOn,
 		GpioOff: gpioOff,

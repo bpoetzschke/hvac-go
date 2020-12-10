@@ -1,5 +1,7 @@
 package irprotocol
 
-type IRProtocol interface {
-	ProcessCode(gpioPin uint32, irCode []IRCode) error
+import "github.com/bpoetzschke/hvac-go/ir"
+
+type Protocol interface {
+	ProcessCode(gpioPin uint32, irCode []IRCode) (ir.Wave, error)
 }
